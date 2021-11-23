@@ -4,11 +4,10 @@ import time
 
 # Set counters and other global variables
 is_inFrame = False
-appleCount = bananaCount = orangeCount = 0
-i=0
-imgDetected_counter=0
-path = "C:/Users/siern/github/cmpe130-object-detection-and-image-sorting"
 prev = time.time()
+appleCount = bananaCount = orangeCount = 0
+path = "C:/Users/siern/github/cmpe130-object-detection-and-image-sorting"
+
 
 # ------------------------- OBJECT DETECTION STARTS HERE -------------------------
 # Setup for camera detection
@@ -36,8 +35,6 @@ net.setInputSwapRB(True)
 
 # Send image to the model
 while True:
-
-
     success, img = cap.read()
     classID_list, confidence, bbox = net.detect(img, confThreshold = 0.65)
     print(classID_list, bbox)
@@ -54,7 +51,7 @@ while True:
             is_inFrame = True
             curr = time.time()
             if curr - prev >= 3 and is_inFrame:
-                img_name = "banana{}.png".format(appleCount)
+                img_name = "banana{}.png".format(bananaCount)
                 cv2.imwrite(img_name, img)
                 print("{} written!".format(img_name))
                 prev = curr
@@ -75,7 +72,7 @@ while True:
             is_inFrame = True
             curr = time.time()
             if curr - prev >= 3 and is_inFrame:
-                img_name = "orange{}.png".format(appleCount)
+                img_name = "orange{}.png".format(orangeCount)
                 cv2.imwrite(img_name, img)
                 print("{} written!".format(img_name))
                 prev = curr
