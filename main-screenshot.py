@@ -2,7 +2,7 @@ import cv2
 import glob
 import time
 
-# Set counters
+# Set counters and other global variables
 is_inFrame = False
 appleCount = bananaCount = orangeCount = 0
 i=0
@@ -36,8 +36,7 @@ net.setInputSwapRB(True)
 
 # Send image to the model
 while True:
-    if(cv2.waitKey(10) == 27):
-        break
+
 
     success, img = cap.read()
     classID_list, confidence, bbox = net.detect(img, confThreshold = 0.65)
@@ -55,7 +54,7 @@ while True:
             is_inFrame = True
             curr = time.time()
             if curr - prev >= 3 and is_inFrame:
-                img_name = "opencv_frame_{}.png".format(appleCount)
+                img_name = "banana{}.png".format(appleCount)
                 cv2.imwrite(img_name, img)
                 print("{} written!".format(img_name))
                 prev = curr
@@ -65,7 +64,7 @@ while True:
             is_inFrame = True
             curr = time.time()
             if curr - prev >= 3 and is_inFrame:
-                img_name = "opencv_frame_{}.png".format(appleCount)
+                img_name = "apple{}.png".format(appleCount)
                 cv2.imwrite(img_name, img)
                 print("{} written!".format(img_name))
                 prev = curr
@@ -76,7 +75,7 @@ while True:
             is_inFrame = True
             curr = time.time()
             if curr - prev >= 3 and is_inFrame:
-                img_name = "opencv_frame_{}.png".format(appleCount)
+                img_name = "orange{}.png".format(appleCount)
                 cv2.imwrite(img_name, img)
                 print("{} written!".format(img_name))
                 prev = curr
@@ -85,9 +84,10 @@ while True:
         # NOT A FRUIT / OFF-FRAME
         else:
             is_inFrame = False
-            prev -= 3
+            prev -= 5
 
-
+    if(cv2.waitKey(1) == 27):
+        break
     # Show the image that was read earlier
     cv2.imshow("Output", img)
     cv2.waitKey(1)
