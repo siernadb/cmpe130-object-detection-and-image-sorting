@@ -10,7 +10,7 @@ imgDetected_counter=0
 path = "C:/Users/siern/github/cmpe130-object-detection-and-image-sorting"
 prev = time.time()
 
-
+# ------------------------- OBJECT DETECTION STARTS HERE -------------------------
 # Setup for camera detection
 cap = cv2.VideoCapture(0)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -88,11 +88,19 @@ while True:
 
     if(cv2.waitKey(1) == 27):
         break
-    # Show the image that was read earlier
+
+    # Show display
     cv2.imshow("Output", img)
     cv2.waitKey(1)
 
-    # Screenshot if apple/orange/banana is detected
+# ------------------------- OBJECT DETECTION ENDS HERE -------------------------
+# ------------------------- SORTING STARTS HERE --------------------------------
+
+
+
+
+
+# ------------------------------------------------------------------------------
 
 print("Apple count: " + str(appleCount))
 print("Banana count: " + str(bananaCount))
