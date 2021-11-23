@@ -1,20 +1,23 @@
 import cv2
 import glob
+import time
 
+# Set counters
+is_inFrame = False
+appleCount = bananaCount = orangeCount = 0
 i=0
-img_counter=0
+imgDetected_counter=0
 path = "C:/Users/siern/github/cmpe130-object-detection-and-image-sorting"
+prev = time.time()
 
-#For camera detection
+
+# Setup for camera detection
 cap = cv2.VideoCapture(0)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
 cap.set(3,640)
 cap.set(4,480)
 
-#Set counters
-appleCount = bananaCount = orangeCount = 0
-
-# Read list of item names
+# Read list of item names from coco file
 classNames = []
 classFile = 'coco.names'
 with open(classFile, 'rt') as f:
@@ -24,16 +27,18 @@ with open(classFile, 'rt') as f:
 configPath = 'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
 weightsPath = 'frozen_inference_graph.pb'
 
-# Build the model
+# Build the model for object detection
 net = cv2.dnn_DetectionModel(weightsPath, configPath)
 net.setInputSize(320, 320)                              # Set size of the input box
 net.setInputScale(1.0/127.5)
 net.setInputMean((127.5, 127.5, 127.5))
 net.setInputSwapRB(True)
 
-
 # Send image to the model
 while True:
+    if(cv2.waitKey(10) == 27):
+        break
+
     success, img = cap.read()
     classID_list, confidence, bbox = net.detect(img, confThreshold = 0.65)
     print(classID_list, bbox)
@@ -43,27 +48,52 @@ while True:
             cv2.rectangle(img, box, color=(255, 216, 1), thickness = 3)
             cv2.putText(img, classNames[classID-1].upper(), (box[0] + 10, box[1] + 30), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 216, 1), 2)
 
-            # Screenshot if apple/orange/banana is detected
-            if classID == 53:
-                if img_counter%(3*fps) == 0:
-                    img_name = "opencv_frame_{}.png".format(img_counter)
-                    cv2.imwrite(img_name, img)
-                    print("{} written!".format(img_name))
-                    appleCount += 1
-                    img_counter += 1
-            elif classID == 52:
+        # Screenshot if apple/orange/banana is detected
+        #   Capture every 3 seconds -- otherwise: opencv will keep exporting a screenshot for each frame
+        # BANANA
+        if classID == 52:
+            is_inFrame = True
+            curr = time.time()
+            if curr - prev >= 3 and is_inFrame:
+                img_name = "opencv_frame_{}.png".format(appleCount)
+                cv2.imwrite(img_name, img)
+                print("{} written!".format(img_name))
+                prev = curr
                 bananaCount += 1
+        # APPLE
+        elif classID == 53:
+            is_inFrame = True
+            curr = time.time()
+            if curr - prev >= 3 and is_inFrame:
+                img_name = "opencv_frame_{}.png".format(appleCount)
+                cv2.imwrite(img_name, img)
+                print("{} written!".format(img_name))
+                prev = curr
+                appleCount += 1
+
+        # ORANGE
+        elif classID == 55:
+            is_inFrame = True
+            curr = time.time()
+            if curr - prev >= 3 and is_inFrame:
+                img_name = "opencv_frame_{}.png".format(appleCount)
+                cv2.imwrite(img_name, img)
+                print("{} written!".format(img_name))
+                prev = curr
+                orangeCount += 1
+
+        # NOT A FRUIT / OFF-FRAME
+        else:
+            is_inFrame = False
+            prev -= 3
 
 
     # Show the image that was read earlier
     cv2.imshow("Output", img)
     cv2.waitKey(1)
 
-    # Ends session when 'b' is pressed
-    if(cv2.waitKey(10) & 0xFF == ord('b')):
-        break
-
     # Screenshot if apple/orange/banana is detected
 
 print("Apple count: " + str(appleCount))
 print("Banana count: " + str(bananaCount))
+print("Orange count: " + str(orangeCount))
