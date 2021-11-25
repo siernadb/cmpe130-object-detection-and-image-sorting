@@ -4,7 +4,7 @@ import glob
 # Read an image and store it in a variable
 #img = cv2.imread('rotten-apple.jpg')
 
-path = "C:/Users/siern/Desktop/opencv practice"
+path = "C:/Users/siern/github/cmpe130-object-detection-and-image-sorting"
 images = [cv2.imread(file) for file in glob.glob(path + "/*.jpg")]
 i=0
 
