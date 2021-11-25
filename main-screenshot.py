@@ -3,15 +3,18 @@ import glob
 import time
 import os
 
+
 # Set counters and other global variables
 is_inFrame = False
 prev = time.time()
 appleCount = bananaCount = orangeCount = 0
+
 path = "G:\My Drive\CMPE 130 - adv alg des\project versions\h02-cmpe130-object-detection-and-image-sorting-main\cmpe130-object-detection-and-image-sorting"
 
 
 # ------------------------- OBJECT DETECTION STARTS HERE -------------------------
 # Setup for camera detection8
+
 cap = cv2.VideoCapture(0)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
 cap.set(3,640)
@@ -53,6 +56,7 @@ while True:
             curr = time.time()
             if curr - prev >= 3 and is_inFrame:
                 img_name = "banana{}.png".format(bananaCount)
+
                 bananadir = 'Bananas'
                 if os.path.isdir(os.path.join(path,bananadir)):
                     cv2.imwrite(os.path.join(path, bananadir, img_name), img)
@@ -65,6 +69,7 @@ while True:
                     print("{} written!".format(img_name))
                     prev = curr
                     bananaCount += 1
+
         # APPLE
         elif classID == 53:
             is_inFrame = True
@@ -84,12 +89,14 @@ while True:
                     print("{} written!".format(img_name))
                     prev = curr
                     appleCount += 1
+
         # ORANGE
         elif classID == 55:
             is_inFrame = True
             curr = time.time()
             if curr - prev >= 3 and is_inFrame:
                 img_name = "orange{}.png".format(orangeCount)
+
                 orangedir = 'Oranges'
                 if os.path.isdir(os.path.join(path,orangedir)):
                     cv2.imwrite(os.path.join(path, orangedir, img_name), img)
