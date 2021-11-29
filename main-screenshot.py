@@ -3,42 +3,50 @@ import glob
 import time
 import os
 import tkinter as tk
-from PIL import Image, ImageTk
 from tkinter import filedialog
+import matplotlib.pyplot as plt         #pip install matplotlib
 
 
 
 # Set counters and other global variables
 global is_inFrame
 global prev
-global appleCount, bananaCount, orangeCount
 global fruits_scanned
 global path
 global path_string
-global endTask_isEnabled
+
 
 root = tk.Tk()
 path = tk.StringVar()
 path_string = ""
-endTask_isEnabled = False
 
-
-#path = "C:/Users/siern/github/cmpe130-object-detection-and-image-sorting"
 # ------------------------- GUI STARTS HERE --------------------------------
+def displaySummary():
+    run_label.set("Run")
+    x_fruits = ["Apples", "Bananas", "Oranges"]
+    x_values = [appleCount, bananaCount, orangeCount]
+    plt.bar(x_fruits,x_values)
+    plt.xlabel("Fruits")
+    plt.ylabel("No. of Fruits Detected")
+    plt.title("Fruits Detected and Sorted")
+    plt.show()
+
 def browse_directory():
     filename = filedialog.askdirectory()
     path.set(filename)
     path_string = str(filename)
     print("File name set: ", path_string)
 
-def endTask():
-    endTask_isEnabled = True
+def runDetection():
+    run_label.set("Running...")
+    objectDetection_enable()
 
 def objectDetection_enable():
     # ------------------------- OBJECT DETECTION STARTS HERE -------------------------
     # Setup for camera detection8
     is_inFrame = False
     prev = time.time()
+    global appleCount,bananaCount,orangeCount
     appleCount = bananaCount = orangeCount = 0
     fruits_scanned = []
     print("Path string: ", path_string)
@@ -149,6 +157,8 @@ def objectDetection_enable():
                 prev -= 5
 
         if(cv2.waitKey(1) == 27):
+            cap.release()
+            cv2.destroyAllWindows()
             break
 
         # Show display
@@ -161,15 +171,9 @@ def objectDetection_enable():
 # ------------------------- MAIN STARTS HERE -------------------------
 def main():
     # Interface variables
-    directoryFound = False
-
-
-
-
-
     # Set up window
     canvas = tk.Canvas(root, width=600, height=300)
-    canvas.grid(columnspan=3, rowspan=5)   # Splits canvas into three invisible sections
+    canvas.grid(columnspan=3, rowspan=9)   # Splits canvas into three invisible sections
 
     # Titles and labels
     mainTitle = tk.Label(root, text="CMPE 133\nOBJECT DETECTION AND IMAGE SORTING", font=("Consolas", 18, 'bold'))
@@ -184,25 +188,17 @@ def main():
 
     # Insert END TASK button
     end_label = tk.StringVar()
-    end_button = tk.Button(root, textvariable=end_label, command=lambda: endTask(), font="Raleway", bg="#81a55f", fg="white", height=2, width=15)
+    end_button = tk.Button(root, textvariable=end_label, command=lambda: displaySummary(), font="Raleway", bg="#81a55f", fg="white", height=2, width=15)
     end_label.set("End Session")
     end_button.grid(column=1, row=4)
 
     # Insert RUN button
+    global run_label
     run_label = tk.StringVar()
-
-    run_button = tk.Button(root, textvariable=run_label, command=lambda:objectDetection_enable(), font="Raleway", bg="#81a55f", fg="white", height=2, width=15)
-    run_label.set("Run")
+    run_button = tk.Button(root, textvariable=run_label, command=lambda:runDetection(), font="Raleway", bg="#81a55f", fg="white", height=2, width=15)
     run_button.grid(column=1, row=3)
-
-
-
+    run_label.set("Run")
     root.mainloop()
-
-    print("Apple count: " + str(appleCount))
-    print("Banana count: " + str(bananaCount))
-    print("Orange count: " + str(orangeCount))
-
 
 main()
 
