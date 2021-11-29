@@ -13,8 +13,6 @@ global is_inFrame
 global prev
 global fruits_scanned
 global path
-global path_string
-
 
 root = tk.Tk()
 path = tk.StringVar()
@@ -32,6 +30,7 @@ def displaySummary():
     plt.show()
 
 def browse_directory():
+    global path_string
     filename = filedialog.askdirectory()
     path.set(filename)
     path_string = str(filename)
@@ -103,6 +102,7 @@ def objectDetection_enable():
                         bananaCount += 1
                     else:
                         os.mkdir(os.path.join(path_string,bananadir))
+                        print("dIRECTORY CREATED: ", path_string,bananadir )
                         cv2.imwrite(os.path.join(path_string, bananadir, img_name), img)
                         print("{} written!".format(img_name))
                         prev = curr
