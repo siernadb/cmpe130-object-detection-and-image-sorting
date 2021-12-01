@@ -59,12 +59,11 @@ def objectDetection_enable():
     global appleCount,bananaCount,orangeCount
     appleCount = bananaCount = orangeCount = 0
     global appleC,bananaC,orangeC
-    appleC =0
-    bananaC = 10000
-    orangeC = 20000
+    appleC = 10000
+    bananaC = 20000
+    orangeC = 30000
     global fruits_scanned
     fruits_scanned = []
-    ext=".png"
     print("Path string: ", path_string)
     if not os.path.isdir(os.path.join(tpath,tdir)):
         os.mkdir(os.path.join(tpath,tdir))
@@ -109,11 +108,11 @@ def objectDetection_enable():
                 is_inFrame = True
                 curr = time.time()
                 if curr - prev >= 3 and is_inFrame:
-                    img_name = "{}".format(bananaC)
+                    img_name = "{}.png".format(bananaC)
                     
-                    cv2.imwrite(os.path.join(tpath,tdir,img_name,ext), img)
+                    cv2.imwrite(os.path.join(tpath,tdir,img_name), img)
                     print("{} written!".format(img_name))
-                    fruits_scanned.append(img_name)
+                    fruits_scanned.append(img_name[0:5])
                     prev = curr
                     bananaCount += 1
                     bananaC+=1
@@ -125,11 +124,11 @@ def objectDetection_enable():
                 is_inFrame = True
                 curr = time.time()
                 if curr - prev >= 3 and is_inFrame:
-                    img_name = "{}".format(appleC)
+                    img_name = "{}.png".format(appleC)
 
-                    cv2.imwrite(os.path.join(tpath, tdir, img_name,ext), img)
+                    cv2.imwrite(os.path.join(tpath, tdir, img_name), img)
                     print("{} written!".format(img_name))
-                    fruits_scanned.append(img_name)
+                    fruits_scanned.append(img_name[0:5])
                     prev = curr
                     appleCount += 1
                     appleC += 1
@@ -141,10 +140,10 @@ def objectDetection_enable():
                 is_inFrame = True
                 curr = time.time()
                 if curr - prev >= 3 and is_inFrame:
-                    img_name = "{}".format(orangeC)
+                    img_name = "{}.png".format(orangeC)
 
-                    cv2.imwrite(os.path.join(tpath, tdir, img_name, ext), img)
-                    fruits_scanned.append(img_name)
+                    cv2.imwrite(os.path.join(tpath, tdir, img_name), img)
+                    fruits_scanned.append(img_name[0:5])
                     print("{} written!".format(img_name))
                     prev = curr
                     orangeCount += 1
@@ -166,6 +165,9 @@ def objectDetection_enable():
         cv2.waitKey(1)
 
 
+
+
+#..............................SORTING BEGINS HERE ........................
 def quick_sort(sequence):
     for x in range(len(sequence)):
         print (sequence[x])
@@ -183,6 +185,8 @@ def quick_sort(sequence):
         return quick_sort(items_lower) + [pivot] + quick_sort(items_greater)
     else:
         return sequence
+
+        
 def sort_list():
     sort_label.set("Sorting")
     global sorted_list
@@ -194,41 +198,50 @@ def sort_list():
     bananadir = 'Bananas'
     orangedir = 'Oranges'
     count = 0
-    fname = "Apple{}.png".format(count)
-    for item in range(appleCount):
-        for file in tfile.iterdir():
-            if file.name == sorted_list[item]:
-
+    
+    for file in tfile.iterdir():
+      
+        for item in range(appleCount):
+            
+            if file.name[0:5] == sorted_list[item]:
+                fname = "Apple{}.png".format(count)
                 new_path =os.path.join(path_string,appledir)
+                new_file =os.path.join(new_path,fname)
                 if not os.path.isdir(new_path):
                     os.mkdir(new_path)
-                os.replace(path(file), os.path.join(new_path,fname))
+                file.replace( Path(new_file))
+                count+=1
 
     count = 0
-    fname = "Banana{}.png".format(count)
-    index = appleCount +1
+    index = appleCount 
     until = appleCount + bananaCount
-    for item in range(index,until):
-        for file in tfile.iterdir():
-            if file.name == sorted_list[item]:
-
+ 
+    for file in tfile.iterdir():
+        for item in range(index,until):
+            if file.name[0:5] == sorted_list[item]:
+                fname = "Banana{}.png".format(count)
                 new_path =os.path.join(path_string,bananadir)
+                new_file =os.path.join(new_path,fname)
                 if not os.path.isdir(new_path):
                     os.mkdir(new_path)
-                os.replace(path(file), os.path.join(new_path,fname))
+                file.replace( Path(new_file))
+                count+=1
     
     count = 0
-    index = bananaCount +1
-    until = bananaCount + orangeCount
-    fname = "Orange{}.png".format(count)
-    for item in range(index, until):
-        for file in tfile.iterdir():
-            if file.name == sorted_list[item]:
+    index = appleCount + bananaCount 
+    until = appleCount +bananaCount + orangeCount
 
+    for file in tfile.iterdir():
+        for item in range(index, until):
+            if file.name[0:5] == sorted_list[item]:
+                fname = "Orange{}.png".format(count)
                 new_path =os.path.join(path_string,orangedir)
+                new_file =os.path.join(new_path,fname)
                 if not os.path.isdir(new_path):
                     os.mkdir(new_path)
-                os.replace(path(file), os.path.join(new_path,fname))
+                file.replace(Path(new_file))
+                count+=1
+print ("re organization done")
 
         
 # ------------------------- OBJECT DETECTION ENDS HERE -------------------------
