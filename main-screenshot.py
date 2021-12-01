@@ -2,136 +2,278 @@ import cv2
 import glob
 import time
 import os
+import tkinter as tk
+from tkinter import filedialog
+import matplotlib.pyplot as plt         #pip install matplotlib
+import pathlib
+from pathlib import Path
 
 
 # Set counters and other global variables
-is_inFrame = False
-prev = time.time()
-appleCount = bananaCount = orangeCount = 0
+global is_inFrame
+global prev
 
-path = "G:\My Drive\CMPE 130 - adv alg des\project versions\h02-cmpe130-object-detection-and-image-sorting-main\cmpe130-object-detection-and-image-sorting"
+global path
+global tpath
+global tdir
+global id_list
 
 
-# ------------------------- OBJECT DETECTION STARTS HERE -------------------------
-# Setup for camera detection8
+tdir = 'temp'
+tpath = os.path.dirname(os.path.abspath(__file__))
 
-cap = cv2.VideoCapture(0)
-fps = int(cap.get(cv2.CAP_PROP_FPS))
-cap.set(3,640)
-cap.set(4,480)
+root = tk.Tk()
+path = tk.StringVar()
+path_string = ""
 
-# Read list of item names from coco file
-classNames = []
-classFile = 'coco.names'
-with open(classFile, 'rt') as f:
-    classNames = f.read().rstrip('\n').split('\n')
+# ------------------------- GUI STARTS HERE --------------------------------
+def displaySummary():
+    run_label.set("Run")
+    x_fruits = ["Apples", "Bananas", "Oranges"]
+    x_values = [appleCount, bananaCount, orangeCount]
+    plt.bar(x_fruits,x_values)
+    plt.xlabel("Fruits")
+    plt.ylabel("No. of Fruits Detected")
+    plt.title("Fruits Detected and Sorted")
+    plt.show()
+    
 
-# Specify config path and weights path
-configPath = 'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
-weightsPath = 'frozen_inference_graph.pb'
+def browse_directory():
+    global path_string
+    filename = filedialog.askdirectory()
+    path.set(filename)
+    path_string = str(filename)
+    print("File name set: ", path_string)
 
-# Build the model for object detection
-net = cv2.dnn_DetectionModel(weightsPath, configPath)
-net.setInputSize(320, 320)                              # Set size of the input box
-net.setInputScale(1.0/127.5)
-net.setInputMean((127.5, 127.5, 127.5))
-net.setInputSwapRB(True)
+    
 
-# Send image to the model
-while True:
-    success, img = cap.read()
-    classID_list, confidence, bbox = net.detect(img, confThreshold = 0.65)
-    print(classID_list, bbox)
+def runDetection():
+    run_label.set("Running...")
+    objectDetection_enable()
 
-    if len(classID_list) != 0:
-        for classID, confidence_element, box in zip(classID_list.flatten(), confidence.flatten(), bbox):
-            cv2.rectangle(img, box, color=(255, 216, 1), thickness = 3)
-            cv2.putText(img, classNames[classID-1].upper(), (box[0] + 10, box[1] + 30), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 216, 1), 2)
+def objectDetection_enable():
+    # ------------------------- OBJECT DETECTION STARTS HERE -------------------------
+    # Setup for camera detection8
+    is_inFrame = False
+    prev = time.time()
+    global appleCount,bananaCount,orangeCount
+    appleCount = bananaCount = orangeCount = 0
+    global appleC,bananaC,orangeC
+    appleC =0
+    bananaC = 10000
+    orangeC = 20000
+    global fruits_scanned
+    fruits_scanned = []
+    ext=".png"
+    print("Path string: ", path_string)
+    if not os.path.isdir(os.path.join(tpath,tdir)):
+        os.mkdir(os.path.join(tpath,tdir))
+    
+    cap = cv2.VideoCapture(0)
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    cap.set(3,640)
+    cap.set(4,480)
 
-        # Screenshot if apple/orange/banana is detected
-        #   Capture every 3 seconds -- otherwise: opencv will keep exporting a screenshot for each frame
-        # BANANA
-        if classID == 52:
-            is_inFrame = True
-            curr = time.time()
-            if curr - prev >= 3 and is_inFrame:
-                img_name = "banana{}.png".format(bananaCount)
+    # Read list of item names from coco file
+    classNames = []
+    classFile = 'coco.names'
+    with open(classFile, 'rt') as f:
+        classNames = f.read().rstrip('\n').split('\n')
 
-                bananadir = 'Bananas'
-                if os.path.isdir(os.path.join(path,bananadir)):
-                    cv2.imwrite(os.path.join(path, bananadir, img_name), img)
+    # Specify config path and weights path
+    configPath = 'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
+    weightsPath = 'frozen_inference_graph.pb'
+
+    # Build the model for object detection
+    net = cv2.dnn_DetectionModel(weightsPath, configPath)
+    net.setInputSize(320, 320)                              # Set size of the input box
+    net.setInputScale(1.0/127.5)
+    net.setInputMean((127.5, 127.5, 127.5))
+    net.setInputSwapRB(True)
+
+    # Send image to the model
+    while True:
+        success, img = cap.read()
+        classID_list, confidence, bbox = net.detect(img, confThreshold = 0.65)
+        print(classID_list, bbox)
+
+        if len(classID_list) != 0:
+            for classID, confidence_element, box in zip(classID_list.flatten(), confidence.flatten(), bbox):
+                cv2.rectangle(img, box, color=(255, 216, 1), thickness = 3)
+                cv2.putText(img, classNames[classID-1].upper(), (box[0] + 10, box[1] + 30), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 216, 1), 2)
+                
+            # Screenshot if apple/orange/banana is detected
+            #   Capture every 3 seconds -- otherwise: opencv will keep exporting a screenshot for each frame
+            # BANANA
+            if classID == 52:
+                is_inFrame = True
+                curr = time.time()
+                if curr - prev >= 3 and is_inFrame:
+                    img_name = "{}".format(bananaC)
+                    
+                    cv2.imwrite(os.path.join(tpath,tdir,img_name,ext), img)
                     print("{} written!".format(img_name))
+                    fruits_scanned.append(img_name)
                     prev = curr
                     bananaCount += 1
-                else:
-                    os.mkdir(os.path.join(path,bananadir))
-                    cv2.imwrite(os.path.join(path, bananadir, img_name), img)
-                    print("{} written!".format(img_name))
-                    prev = curr
-                    bananaCount += 1
+                    bananaC+=1
+                    
+                    
+                
+            # APPLE
+            elif classID == 53:
+                is_inFrame = True
+                curr = time.time()
+                if curr - prev >= 3 and is_inFrame:
+                    img_name = "{}".format(appleC)
 
-        # APPLE
-        elif classID == 53:
-            is_inFrame = True
-            curr = time.time()
-            if curr - prev >= 3 and is_inFrame:
-                img_name = "apple{}.png".format(appleCount)
-               
-                appledir = 'Apples'
-                if os.path.isdir(os.path.join(path,appledir)):
-                    cv2.imwrite(os.path.join(path, appledir, img_name), img)
+                    cv2.imwrite(os.path.join(tpath, tdir, img_name,ext), img)
                     print("{} written!".format(img_name))
+                    fruits_scanned.append(img_name)
                     prev = curr
                     appleCount += 1
-                else:
-                    os.mkdir(os.path.join(path,appledir))
-                    cv2.imwrite(os.path.join(path, appledir, img_name), img)
-                    print("{} written!".format(img_name))
-                    prev = curr
-                    appleCount += 1
+                    appleC += 1
+                    
+            
 
-        # ORANGE
-        elif classID == 55:
-            is_inFrame = True
-            curr = time.time()
-            if curr - prev >= 3 and is_inFrame:
-                img_name = "orange{}.png".format(orangeCount)
+            # ORANGE
+            elif classID == 55:
+                is_inFrame = True
+                curr = time.time()
+                if curr - prev >= 3 and is_inFrame:
+                    img_name = "{}".format(orangeC)
 
-                orangedir = 'Oranges'
-                if os.path.isdir(os.path.join(path,orangedir)):
-                    cv2.imwrite(os.path.join(path, orangedir, img_name), img)
-                    print("{} written!".format(img_name))
-                    prev = curr
+                    cv2.imwrite(os.path.join(tpath, tdir, img_name, ext), img)
+                    fruits_scanned.append(img_name)
                     print("{} written!".format(img_name))
                     prev = curr
                     orangeCount += 1
-                else:
-                    os.mkdir(os.path.join(path,orangedir))
-                    cv2.imwrite(os.path.join(path, orangedir, img_name), img)
-                    print("{} written!".format(img_name))
-                    prev = curr
+                    orangeC += 1
+        
 
-        # NOT A FRUIT / OFF-FRAME
-        else:
-            is_inFrame = False
-            prev -= 5
+            # NOT A FRUIT / OFF-FRAME
+            else:
+                is_inFrame = False
+                prev -= 5
 
-    if(cv2.waitKey(1) == 27):
-        break
+        if(cv2.waitKey(1) == 27):
+            cap.release()
+            cv2.destroyAllWindows()
+            break
 
-    # Show display
-    cv2.imshow("Output", img)
-    cv2.waitKey(1)
+        # Show display
+        cv2.imshow("Output", img)
+        cv2.waitKey(1)
 
+
+def quick_sort(sequence):
+    for x in range(len(sequence)):
+        print (sequence[x])
+    length = len(sequence)
+    if length>1:
+        pivot = sequence.pop()
+        items_greater = []
+        items_lower = []
+
+        for item in sequence:
+            if item >  pivot:
+                items_greater.append(item)
+            else:
+                items_lower.append(item)
+        return quick_sort(items_lower) + [pivot] + quick_sort(items_greater)
+    else:
+        return sequence
+def sort_list():
+    sort_label.set("Sorting")
+    global sorted_list
+    sorted_list = quick_sort(fruits_scanned)
+    for x in range(len(sorted_list)):
+        print (sorted_list[x])
+    tfile = Path(os.path.join(tpath,tdir))
+    appledir = 'Apples'
+    bananadir = 'Bananas'
+    orangedir = 'Oranges'
+    count = 0
+    fname = "Apple{}.png".format(count)
+    for item in range(appleCount):
+        for file in tfile.iterdir():
+            if file.name == sorted_list[item]:
+
+                new_path =os.path.join(path_string,appledir)
+                if not os.path.isdir(new_path):
+                    os.mkdir(new_path)
+                os.replace(path(file), os.path.join(new_path,fname))
+
+    count = 0
+    fname = "Banana{}.png".format(count)
+    index = appleCount +1
+    until = appleCount + bananaCount
+    for item in range(index,until):
+        for file in tfile.iterdir():
+            if file.name == sorted_list[item]:
+
+                new_path =os.path.join(path_string,bananadir)
+                if not os.path.isdir(new_path):
+                    os.mkdir(new_path)
+                os.replace(path(file), os.path.join(new_path,fname))
+    
+    count = 0
+    index = bananaCount +1
+    until = bananaCount + orangeCount
+    fname = "Orange{}.png".format(count)
+    for item in range(index, until):
+        for file in tfile.iterdir():
+            if file.name == sorted_list[item]:
+
+                new_path =os.path.join(path_string,orangedir)
+                if not os.path.isdir(new_path):
+                    os.mkdir(new_path)
+                os.replace(path(file), os.path.join(new_path,fname))
+
+        
 # ------------------------- OBJECT DETECTION ENDS HERE -------------------------
-# ------------------------- SORTING STARTS HERE --------------------------------
+# ------------------------- MAIN STARTS HERE -------------------------
+def main():
+    # Interface variables
+    # Set up window
+    canvas = tk.Canvas(root, width=800, height=400)
+    canvas.grid(columnspan=3, rowspan=9)   # Splits canvas into three invisible sections
+
+    # Titles and labels
+    mainTitle = tk.Label(root, text="CMPE 133\nOBJECT DETECTION AND IMAGE SORTING", font=("Consolas", 18, 'bold'))
+    mainTitle.grid(columnspan=3, column=0, row=0)
+
+    # Insert BROWSE button
+    browse_label = tk.StringVar()
+    browse_button = tk.Button(root, textvariable=browse_label, command=lambda:browse_directory(), font="Raleway", bg="#81a55f", fg="white", height=2, width=15)
+    browse_label.set("Set Directory")
+    browse_button.grid(column=1, row=2)
 
 
+    # Insert Summary button
+    global summary_label
+    summary_label = tk.StringVar()
+    summary_button = tk.Button(root, textvariable=summary_label, command=lambda: displaySummary(), font="Raleway", bg="#81a55f", fg="white", height=2, width=15)
+    summary_label.set("Show Summary")
+    summary_button.grid(column=1, row=5)
+
+     # Insert END TASK button
+    global sort_label
+    sort_label = tk.StringVar()
+    sort_button = tk.Button(root, textvariable=sort_label, command=lambda: sort_list(), font="Raleway", bg="#81a55f", fg="white", height=2, width=15)
+    sort_label.set("Sort list")
+    sort_button.grid(column=1, row=4)
+
+    # Insert RUN button
+    global run_label
+    run_label = tk.StringVar()
+    run_button = tk.Button(root, textvariable=run_label, command=lambda:runDetection(), font="Raleway", bg="#81a55f", fg="white", height=2, width=15)
+    run_button.grid(column=1, row=3)
+    run_label.set("Run")
+    root.mainloop()
+
+main()
 
 
 
 # ------------------------------------------------------------------------------
-
-print("Apple count: " + str(appleCount))
-print("Banana count: " + str(bananaCount))
-print("Orange count: " + str(orangeCount))
