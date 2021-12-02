@@ -241,7 +241,7 @@ def sort_list():
                     os.mkdir(new_path)
                 file.replace(Path(new_file))
                 count+=1
-    print ("sprting and re-organization done")
+    print ("sorting and re-organization done")
 
 
 # ------------------------- OBJECT DETECTION ENDS HERE -------------------------
